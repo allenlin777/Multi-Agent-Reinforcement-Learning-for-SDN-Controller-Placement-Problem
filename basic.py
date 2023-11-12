@@ -4,7 +4,7 @@ import numpy as np
 from geopy.distance import geodesic
 from tqdm import tqdm
 '''Simulation Setup'''
-tj=1    # 1, 2, 3, 4
+tj=4    # 1, 2, 3, 4
 capacity=2000_000   # ci=2000k req/s
 exp_distri_mean=200_000   # mean=200k req/s
 alpha=10
@@ -65,8 +65,10 @@ for trail in tqdm(range(trials)):
                 if G.edges[(p,j)]['distance']<=SC_max:
                     x[p][j]=1
                     # quick[j]=1 => pass Z
-                    v=np.sum(x,axis=0)
-                    if v[j]>tj:
+                    vj=0
+                    for i in range(n):
+                        vj+=x[i][j]*Z(i,j)
+                    if vj>tj:
                         x[p][j]=0
                         # quick[j]=1 => pass Z, g
                         tmp=0
@@ -81,7 +83,7 @@ for trail in tqdm(range(trials)):
             max_load=0
             delete_index=-1
             for j in range(n):
-                if x[p][j] and load[j]>tmp:
+                if x[p][j] and load[j]>max_load:
                     max_load=load[j]
                     delete_index=j
             x[p][delete_index]=0
