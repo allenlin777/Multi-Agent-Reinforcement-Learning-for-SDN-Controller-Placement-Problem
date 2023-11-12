@@ -4,7 +4,7 @@ import numpy as np
 from geopy.distance import geodesic
 from tqdm import tqdm
 '''Simulation Setup'''
-tj=4    # 1, 2, 3, 4
+tj=1    # 1, 2, 3, 4
 capacity=2000_000   # ci=2000k req/s
 exp_distri_mean=200_000   # mean=200k req/s
 alpha=10
