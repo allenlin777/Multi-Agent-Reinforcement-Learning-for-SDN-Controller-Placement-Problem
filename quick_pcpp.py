@@ -112,6 +112,7 @@ for trail in tqdm(range(trials)):
                     if vj>tj:
                         x[p][j]=0
                         # quick[j]=1 => pass Z, g
+                    else:
                         tmp=0
                         for k in range (n):
                             if k!=p:
