@@ -42,7 +42,7 @@ def v(i,j,x):
         if(manage_more_set[k]):
             tmp+=x[k][j]*Z(k,j)
     return tmp
-def g(i,j,X):
+def g(i,j,x):
     return alpha if v(i,j,x)<=tj else 0
 def Y(i,k):
     if k in G[i]:
