@@ -32,7 +32,6 @@ def Z(i, j):
     if i==j:
         return 1
     if j in G[i]:
-        #print(i,j,G.edges[(i,j)]['distance'],SC_max)
         if G.edges[(i, j)]['distance'] <= SC_max:
             return 1
     return 0
@@ -58,16 +57,12 @@ def u(i, x, load):
     for j in range(n):
         if (x[i][j] != 0):
             if kk(i, x, load) == 0:
-                #print("kk")
                 uti -= beta
             elif Z(i, j) == 0:
-                #print("Z")
                 uti -= beta
             elif g(j, x) == 0:
-                #print("g")
                 uti -= beta
             elif Con(i, j, x) == 0:
-                #print("con")
                 uti -= beta
             else:
                 uti += alpha-beta
@@ -76,16 +71,17 @@ def u(i, x, load):
 class Environment():
     def __init__(self):
         self.x=np.random.randint(2,size=(n,n))
-        self.observation_space = (2**n)
-        self.action_space = 2**n
+        self.observation_space = 2**n
+        self.action_space = n+1
         self.n=n
         
         self.load=np.random.exponential(exp_distri_mean,(n)) # load
 
     def step(self, action, p):
         '''next_state'''
-        action_array=self.inverse_extract(action)
-        self.x[p] = action_array
+        # action_array=self.inverse_extract(action)
+        if action!=self.n:
+            self.x[p][action] = 1-self.x[p][action]
         next_state=self.extract_state(p)
         '''reward'''
         # tmp_controller_placed = np.ones(n, dtype=int)
@@ -113,9 +109,6 @@ class Environment():
                         self.x[i][j]=0
                 else:
                     self.x[i][j]=0
-        s1=self.extract_state(p)
-        state=np.array((s1))
-        return state, p
     
     def extract_state(self,p):
         s1 = self.x[p]
@@ -127,7 +120,7 @@ class Environment():
             cvt1*=2; cvt2*=2
             cvt1+=s1[i]
             cvt2+=s2[i]
-        return cvt1
+        return cvt1,cvt2
     
     def inverse_extract(self,v):
         s=np.zeros(n,dtype=int)
@@ -136,9 +129,3 @@ class Environment():
             s[i]=v%2
             v/=2
         return s
-
-    def render(self):
-        pass
-
-    def close(self):
-        pass
