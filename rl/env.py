@@ -80,8 +80,30 @@ class Environment():
     def step(self, action, p):
         '''next_state'''
         # action_array=self.inverse_extract(action)
-        if action!=self.n:
+        if action!=self.n and action in G[p]:
             self.x[p][action] = 1-self.x[p][action]
+            if G.edges[(p,action)]['distance']<=SC_max:
+                vj=0
+                for i in range(n):
+                    vj+=self.x[i][action]*Z(i,action)
+                if vj<=tj:
+                    tmp=0
+                    for k in range(n):
+                        if k!=p:
+                            tmp+=self.x[k][action]*Z(k,action)*Y(p,k)
+                    if tmp==0:
+                        reward=u(p, self.x, self.load)
+                    else:
+                        self.x[p][action] = 1-self.x[p][action]
+                        reward=-100
+                else:
+                    self.x[p][action] = 1-self.x[p][action]
+                    reward=-100
+            else:
+                self.x[p][action] = 1-self.x[p][action]
+                reward=-100
+        else:
+            reward=u(p, self.x, self.load)
         next_state=self.extract_state(p)
         '''reward'''
         # tmp_controller_placed = np.ones(n, dtype=int)
@@ -95,8 +117,6 @@ class Environment():
         #     reward = -10
         # else:
         #     reward = u(p, self.x, self.load)
-        reward = u(p, self.x, self.load)
-
         return next_state, reward
     
     def reset(self):
@@ -129,3 +149,9 @@ class Environment():
             s[i]=v%2
             v/=2
         return s
+    
+    def uti(self):
+        temp=0
+        for i in range(self.n):
+            temp+=u(i,self.x,self.load)
+        return temp

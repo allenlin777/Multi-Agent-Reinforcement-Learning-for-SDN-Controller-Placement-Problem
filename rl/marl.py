@@ -71,15 +71,15 @@ def test(env):
     for i in range(env.n):
         testing_agent.append(Agent(env))
     for i in range(env.n):
-        testing_agent[i].qtable = np.load("./Tables/table"+str(0)+".npy")
+        testing_agent[i].qtable = np.load("D:\Tables/table"+str(0)+".npy")
     rewards = []
     
     for _ in range(100):
         env.reset()
         count = 0
         done_cnt=0
-        print("origin")
-        print(env.x)
+        # print("origin")
+        # print(env.x)
         while True:
             p=np.random.randint(0,env.n)
             state=env.extract_state(p)
@@ -91,8 +91,8 @@ def test(env):
             count += reward
             done_cnt+=1
             if done_cnt>times:
-                print("after")
-                print(env.x)
+                # print("after")
+                print(env.uti())
                 break
         rewards.append(count/times)
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     if not os.path.exists("./Tables"):
         os.mkdir("./Tables")
         
-    train(env)   
+    #train(env)   
     test(env)
         
     if not os.path.exists("./Rewards"):
