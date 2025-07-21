@@ -8,8 +8,8 @@ tj=1    # 1, 2, 3, 4
 capacity=2000_000   # ci=2000k req/s
 exp_distri_mean=200_000   # mean=200k req/s
 alpha=10
-beta=7
-gml_file="Sprint.gml"   # DFN.gml
+beta=5
+gml_file="Uninett2010.gml"   # DFN.gml
 trials=200  # 200
 '''Read GML file, Setup'''
 G=nx.read_gml(gml_file,label=None)
@@ -27,16 +27,47 @@ for e in G.edges:
 SC_max=0.4*largest_distance # 0.4 x d_max
 CC_max=0.8*largest_distance # 0.8 x d_max
 '''Formulation'''
+def kk(i,x):
+    total_load=np.sum(x[i]*load)
+    return 1 if total_load<=capacity else 0
 def Z(i,j):
     if j in G[i]:
         if G.edges[(i,j)]['distance']<=SC_max:
             return 1
     return 0
+def v(i,j,x):
+    tmp=0
+    for k in range(n):
+        tmp+=x[k][j]*Z(k,j)
+    return tmp
+def g(i,j,X):
+    return alpha if v(i,j,x)<=tj else 0
 def Y(i,k):
     if k in G[i]:
         if G.edges[(i,k)]['distance']>CC_max:
             return 1
     return 0
+def Con(i,j,x):
+    tmp=0
+    for k in range(n):
+        tmp+=x[k][j]*Z(k,j)*Y(i,k)
+    return 1 if tmp==0 else 0
+def u(i,x):
+    uti=0
+    for j in range(n):
+        if(x[i][j]!=0):
+            if kk(i,x)==0:
+                uti-=beta
+            elif Z(i,j)==0:
+                uti-=beta
+            elif g(i,j,x)==0:
+                uti-=beta
+            elif Con(i,j,x)==0:
+                uti-=beta
+            else:
+                uti+=alpha-beta
+        #uti+=x[i][j]*(kk(i,x)*Z(i,j)*g(i,j,x)*Con(i,j,x)-beta)
+    return uti
 neighbor=np.zeros((n,n),dtype=int)
 for j in range(n):
     for i in range(n):
@@ -48,7 +79,9 @@ for j in range(n):
 np.random.seed(0)
 active_controllers=0
 state_transitions=0
-for trail in tqdm(range(trials)):
+total=0
+for trail in range(trials):
+    utemp=0
     notNE_list=np.arange(n) # notNE controller
     load=np.random.exponential(exp_distri_mean,(n)) # load
     controller_placed=np.ones(n,dtype=int)  # yi
@@ -103,21 +136,27 @@ for trail in tqdm(range(trials)):
             for k in range(n):
                 if neighbor[p][k]:
                     notNE_list=np.append(notNE_list,k)
-                        
+
+    for i in range(n):
+        utemp+=u(i,x)
+    total+=x
     ac=np.sum(controller_placed)
     '''print info in every trial'''
     # print(x)
     # print("Number of active controllers: ",ac)
     # print("Number of state transitions: ",convergence_time)
+    # print(utemp)
     active_controllers+=ac
     state_transitions+=convergence_time
 print("trials:",trials,", number of tj:",tj)
 print("avg. active controllers:",active_controllers/trials)
 print("avg. state transitions:",state_transitions/trials)
+# print(np.round(total/trials,1))
+# print("finish")
 
 '''show graph part'''
-# pos={}
-# for i in range (n):
-#     pos[i]=(G.nodes[i]['Longitude'],G.nodes[i]['Latitude'])
-# nx.draw_networkx(G,pos=pos)
-# plt.show()
+pos={}
+for i in range (n):
+    pos[i]=(G.nodes[i]['Longitude'],G.nodes[i]['Latitude'])
+nx.draw_networkx(G,pos=pos)
+plt.show()
